@@ -105,18 +105,18 @@ func (mongoinfo *MongoInfo) StartRestore() {
 
 	logger.Println("The source url is " + srcMongoUri)
 	if err != nil {
-		logger.Println("connect to", mongoinfo.fromhost, "failed")
+		logger.Println("connect to", mongoinfo.fromhost, ":", mongoinfo.fromport, "failed")
 
 	}
-	logger.Println("connect to", mongoinfo.fromhost, "successed")
+	logger.Println("connect to", mongoinfo.fromhost, ":", mongoinfo.fromport, "successed")
 
 	mongoinfo.destClient, err1 = mgo.Dial(destMongoUri)
 	defer mongoinfo.destClient.Close()
 
 	if err1 != nil {
-		logger.Println("connect to", mongoinfo.tohost, "failed")
+		logger.Println("connect to", mongoinfo.tohost, ":", mongoinfo.toport, "failed")
 	}
-	logger.Println("connect to", mongoinfo.tohost, "successed")
+	logger.Println("connect to", mongoinfo.tohost, ":", mongoinfo.toport, "successed")
 
 	var result bson.M
 	oplogDB := mongoinfo.srcClient.DB("local").C("oplog.rs")
