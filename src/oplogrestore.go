@@ -160,7 +160,7 @@ func (mongoinfo *MongoInfo) StartRestore() {
 func main() {
 	var fromhost, tohost, userName, passWord, database, collection string
 	var startts, stopts int64
-	var fromport, toport, logpath, slient string
+	var fromport, toport, logpath, slience string
 	var err1 error
 	var multi_logfile []io.Writer
 	flag.StringVar(&fromhost, "fromhost", "", "the source host")
@@ -174,7 +174,7 @@ func main() {
 	flag.StringVar(&fromport, "fromport", "27017", "the src port")
 	flag.StringVar(&toport, "toport", "27017", "the dest port")
 	flag.StringVar(&logpath, "logpath", "", "the log path ")
-	flag.StringVar(&slient, "slient", "no", "slient or not")
+	flag.StringVar(&slient, "slience", "no", "slient or not")
 
 	flag.Parse()
 
@@ -187,7 +187,7 @@ func main() {
 			os.Exit(-1)
 		}
 
-		if slient == "yes" {
+		if slience == "yes" {
 
 			multi_logfile = []io.Writer{
 				logfile,

@@ -17,7 +17,7 @@
 --startts    开始时间戳（unixtimestamp 包含）\<br /\> 
 --stopts     结束时间戳（unixtimestamp 不包含）\<br /\> 
 --logpath    输出日志路径\<br /\> 
---sliet      是否输出到窗口\<br /\> 
+--sliece     是否输出到窗口\<br /\> 
 
 
 ## 范围迁移使用
