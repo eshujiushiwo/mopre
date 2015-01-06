@@ -72,6 +72,8 @@ func (mongoinfo *MongoInfo) ApplyOplog(oplog bson.M, coll string) {
 		err_i := mongoinfo.destClient.DB(dbcoll[0]).C(dbcoll[1]).Insert(oplog["o"])
 		if err_i != nil {
 			logger.Println("Error:insert failed:", err_i)
+			os.Exit(1)
+
 		}
 
 	case "u":
@@ -79,6 +81,7 @@ func (mongoinfo *MongoInfo) ApplyOplog(oplog bson.M, coll string) {
 		err_u := mongoinfo.destClient.DB(dbcoll[0]).C(dbcoll[1]).Update(oplog["o2"], oplog["o"])
 		if err_u != nil {
 			logger.Println("Error:update failed:", err_u)
+			os.Exit(1)
 		}
 
 	case "d":
@@ -86,6 +89,7 @@ func (mongoinfo *MongoInfo) ApplyOplog(oplog bson.M, coll string) {
 		err_d := mongoinfo.destClient.DB(dbcoll[0]).C(dbcoll[1]).Remove(oplog["o"])
 		if err_d != nil {
 			logger.Println("Error:delete failed:", err_d)
+			os.Exit(1)
 		}
 
 	}
@@ -207,6 +211,7 @@ func main() {
 		mongoinfo := Newmongoinfo(fromhost, tohost, userName, passWord, database, collection, startts, stopts, fromport, toport)
 		mongoinfo.StartRestore()
 		logger.Println("=====Done.=====")
+		os.Exit(0)
 
 	} else {
 
