@@ -174,7 +174,7 @@ func main() {
 	flag.StringVar(&fromport, "fromport", "27017", "the src port")
 	flag.StringVar(&toport, "toport", "27017", "the dest port")
 	flag.StringVar(&logpath, "logpath", "", "the log path ")
-	flag.StringVar(&slient, "slience", "no", "slient or not")
+	flag.StringVar(&slience, "slience", "no", "slient or not")
 
 	flag.Parse()
 
