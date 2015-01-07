@@ -26,6 +26,8 @@ type MongoInfo struct {
 	collection   string
 	startts      int64
 	stopts       int64
+	startcount   int64
+	stopcount    int64
 	fromport     string
 	toport       string
 	srcClient    *mgo.Session
@@ -53,9 +55,9 @@ func GetMongoDBUrl(addr, userName, passWord string, port string) string {
 }
 
 //Get the MongoInfo
-func Newmongoinfo(fromhost, tohost, userName, passWord, database, collection string, startts, stopts int64, fromport, toport string) *MongoInfo {
+func Newmongoinfo(fromhost, tohost, userName, passWord, database, collection string, startts, stopts, startcount, stopcount int64, fromport, toport string) *MongoInfo {
 
-	mongoinfo := &MongoInfo{fromhost, tohost, userName, passWord, database, collection, startts, stopts, fromport, toport, nil, nil, nil, nil, nil, nil}
+	mongoinfo := &MongoInfo{fromhost, tohost, userName, passWord, database, collection, startts, stopts, startcount, stopcount, fromport, toport, nil, nil, nil, nil, nil, nil}
 
 	return mongoinfo
 }
@@ -126,8 +128,8 @@ func (mongoinfo *MongoInfo) StartRestore() {
 	oplogDB := mongoinfo.srcClient.DB("local").C("oplog.rs")
 	//unixtimestamp to mongotimstamp
 	var tmp1, tmp2 int64
-	tmp1 = mongoinfo.startts << 32
-	tmp2 = mongoinfo.stopts << 32
+	tmp1 = mongoinfo.startts<<32 + mongoinfo.startcount
+	tmp2 = mongoinfo.stopts<<32 + mongoinfo.stopcount
 	var mongostartts, mongostopts bson.MongoTimestamp
 	mongostartts = bson.MongoTimestamp(tmp1)
 	mongostopts = bson.MongoTimestamp(tmp2)
@@ -163,7 +165,7 @@ func (mongoinfo *MongoInfo) StartRestore() {
 
 func main() {
 	var fromhost, tohost, userName, passWord, database, collection string
-	var startts, stopts int64
+	var startts, stopts, startcount, stopcount int64
 	var fromport, toport, logpath, slience string
 	var err1 error
 	var multi_logfile []io.Writer
@@ -179,6 +181,8 @@ func main() {
 	flag.StringVar(&toport, "toport", "27017", "the dest port")
 	flag.StringVar(&logpath, "logpath", "", "the log path ")
 	flag.StringVar(&slience, "slience", "no", "slient or not")
+	flag.Int64Var(&startcount, "startcount", 0, "the op start count of startts")
+	flag.Int64Var(&stopcount, "stopcount", 0, "the op stop count of stopts")
 
 	flag.Parse()
 
@@ -208,7 +212,7 @@ func main() {
 
 		logger.Println("=====job start.=====")
 		logger.Println("start init colletion")
-		mongoinfo := Newmongoinfo(fromhost, tohost, userName, passWord, database, collection, startts, stopts, fromport, toport)
+		mongoinfo := Newmongoinfo(fromhost, tohost, userName, passWord, database, collection, startts, stopts, startcount, stopcount, fromport, toport)
 		mongoinfo.StartRestore()
 		logger.Println("=====Done.=====")
 		os.Exit(0)
