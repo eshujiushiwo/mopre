@@ -25,12 +25,12 @@
 ## startcount&stopcount详解
 		在MongoDB的oplog.rs中，ts是如下按如下方式存储的 ：
 		"ts" : Timestamp(1419992913, 4)
-		在不输入startcount 和stopcount的时候，我们的查询范围是：
+		在不输入startcount 和stopcount的时候，我们的查询范围是(前后均包含)：
 		Timestamp(startts, 0)  ------> Timestamp(stopts, 0)
-		在指定了startcount和stopcount的时候，我们的查询范围是
+		在指定了startcount和stopcount的时候，我们的查询范围是(前后均包含):
 		Timestamp(startts, startcount)  ------> Timestamp(stopts, stopcount)
 
-		
+
 
 
 ##实例
