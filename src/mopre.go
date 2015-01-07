@@ -157,7 +157,8 @@ func (mongoinfo *MongoInfo) StartRestore() {
 		}
 
 		timestamp := result["ts"].(bson.MongoTimestamp) >> 32
-		logger.Println("MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp)
+		ct := result["ts"].(bson.MongoTimestamp) - bson.MongoTimestamp(timestamp<<32)
+		logger.Println("MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp, ";Count pos:", ct)
 		mongoinfo.ApplyOplog(result, result["ns"].(string))
 	}
 
