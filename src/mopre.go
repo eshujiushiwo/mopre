@@ -8,10 +8,8 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
-	//"time"
-	//"reflect"
 	"regexp" //all database
+	"strings"
 )
 
 var logfile *os.File
