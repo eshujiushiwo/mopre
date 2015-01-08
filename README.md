@@ -33,7 +33,20 @@
 
 
 
-##实例
+##测试实例
+
+		背景：拥有10点的快照(X)，需要恢复数据库 (DB) 到12点某个误操作之前
+		假设：开始时间戳,startts为a,startcount为0,误操作之前最后的时间戳,stopts为b，stopcount为n
+		主机A（原复制集中一个从节点，出问题后从以非复制集方式启动，保护现场）
+		主机B（零时用于数据恢复的机器）先使用快照X恢复到10点的状态
+
+		./mopre --fromhost A --tohost B --fromport 27017 --toport 27017  --startts a --startcount 0 --stopts b --stopcount n  --database DB  --logpath /tmp/test.log --slience yes
+
+
+
+
+
+
 
 
 
