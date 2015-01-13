@@ -5,6 +5,10 @@
 ## 功能
  MongoDB point-in-time 恢复工具
 
+##2015.01.13更新：
+		来源为mongos时：
+		如果指定的来源为mongos,将在各个shard分片（复制集）上进行并发读（若有多个shar分片，可通过使用--cpu参数来调节性能）。
+
 ## 参数
 		--fromhost   源地址
 		--tohost     目标地址
@@ -20,6 +24,7 @@
 		--stopcount  在结束时间戳的第几个操作结束（default 0 详细解释见下文）
 		--logpath    输出日志路径
 		--sliece     是否输出到窗口 
+		--cpu		 来源为mongos的时候，并发使用的cpu核数
 
 
 ## startcount&stopcount详解
