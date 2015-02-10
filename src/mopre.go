@@ -31,7 +31,9 @@ type MongoInfo struct {
 	fromport   string
 	toport     string
 	ismongos   bool
+	all        string
 	srcShards  map[string]string
+
 	//srcShards    []string
 	srcClient    *mgo.Session
 	destClient   *mgo.Session
@@ -72,9 +74,9 @@ func GetMongoDBUrl(addr, userName, passWord string, port string) string {
 }
 
 //Get the MongoInfo
-func Newmongoinfo(fromhost, tohost, userName, passWord, database, collection string, startts, stopts, startcount, stopcount int64, fromport, toport string) *MongoInfo {
+func Newmongoinfo(fromhost, tohost, userName, passWord, database, collection string, startts, stopts, startcount, stopcount int64, fromport, toport, all string) *MongoInfo {
 
-	mongoinfo := &MongoInfo{fromhost, tohost, userName, passWord, database, collection, startts, stopts, startcount, stopcount, fromport, toport, false, nil, nil, nil, nil, nil, nil, nil}
+	mongoinfo := &MongoInfo{fromhost, tohost, userName, passWord, database, collection, startts, stopts, startcount, stopcount, fromport, toport, false, all, nil, nil, nil, nil, nil, nil, nil}
 	mongoinfo.srcShards = make(map[string]string)
 	logger.Println(len(mongoinfo.srcShards))
 	return mongoinfo
@@ -271,35 +273,51 @@ func (mongoinfo *MongoInfo) StartRestore(addr string, ch chan int) {
 
 	oplogIter := oplogDB.Find(oplogquery).LogReplay().Sort("$natural").Iter()
 
-	for oplogIter.Next(&result) {
-		//if we use the item collection && compare the ns and collection we selected
-		if mongoinfo.collection != "" && result["ns"] != mongoinfo.database+"."+mongoinfo.collection {
-			continue
-		}
-
-		//all datbase
-
-		if mongoinfo.collection == "" {
-
-			match, _ := regexp.MatchString(mongoinfo.database+".*", result["ns"].(string))
-
-			if match == false {
+	if mongoinfo.all == "no" {
+		for oplogIter.Next(&result) {
+			//if we use the item collection && compare the ns and collection we selected
+			if mongoinfo.collection != "" && result["ns"] != mongoinfo.database+"."+mongoinfo.collection {
 				continue
+			}
+
+			//all datbase
+
+			if mongoinfo.collection == "" {
+
+				match, _ := regexp.MatchString(mongoinfo.database+".*", result["ns"].(string))
+
+				if match == false {
+					continue
+
+				}
 
 			}
 
+			timestamp := result["ts"].(bson.MongoTimestamp) >> 32
+
+			ct := result["ts"].(bson.MongoTimestamp) - bson.MongoTimestamp(timestamp<<32)
+			if addr == "repl" {
+				logger.Println("from:", mongoinfo.fromhost, "MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp, ";Count pos:", ct)
+			} else {
+				logger.Println("from:", addr, "MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp, ";Count pos:", ct)
+			}
+			mongoinfo.ApplyOplog(result, result["ns"].(string))
+		}
+	} else if mongoinfo.all == "yes" {
+		for oplogIter.Next(&result) {
+			timestamp := result["ts"].(bson.MongoTimestamp) >> 32
+
+			ct := result["ts"].(bson.MongoTimestamp) - bson.MongoTimestamp(timestamp<<32)
+			if addr == "repl" {
+				logger.Println("from:", mongoinfo.fromhost, "MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp, ";Count pos:", ct)
+			} else {
+				logger.Println("from:", addr, "MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp, ";Count pos:", ct)
+			}
+			mongoinfo.ApplyOplog(result, result["ns"].(string))
 		}
 
-		timestamp := result["ts"].(bson.MongoTimestamp) >> 32
-
-		ct := result["ts"].(bson.MongoTimestamp) - bson.MongoTimestamp(timestamp<<32)
-		if addr == "repl" {
-			logger.Println("from:", mongoinfo.fromhost, "MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp, ";Count pos:", ct)
-		} else {
-			logger.Println("from:", addr, "MongoTimestamp:", result["ts"], "; UnixTimestamp:", timestamp, ";Count pos:", ct)
-		}
-		mongoinfo.ApplyOplog(result, result["ns"].(string))
 	}
+
 	ch <- 1
 
 }
@@ -308,7 +326,7 @@ func main() {
 	var fromhost, tohost, userName, passWord, database, collection string
 	var startts, stopts, startcount, stopcount int64
 	var cpu int
-	var fromport, toport, logpath, slience string
+	var fromport, toport, logpath, slience, all string
 	var err1 error
 	var multi_logfile []io.Writer
 	flag.StringVar(&fromhost, "fromhost", "", "the source host")
@@ -325,6 +343,7 @@ func main() {
 	flag.StringVar(&slience, "slience", "no", "slient or not")
 	flag.Int64Var(&startcount, "startcount", 0, "the op start count of startts")
 	flag.Int64Var(&stopcount, "stopcount", 0, "the op stop count of stopts")
+	flag.StringVar(&all, "all", "no", "recovery all the databases or not")
 	flag.IntVar(&cpu, "cpu", 1, "the cpu nums ")
 
 	flag.Parse()
@@ -355,7 +374,7 @@ func main() {
 
 		logger.Println("=====job start.=====")
 		logger.Println("start init colletion")
-		mongoinfo := Newmongoinfo(fromhost, tohost, userName, passWord, database, collection, startts, stopts, startcount, stopcount, fromport, toport)
+		mongoinfo := Newmongoinfo(fromhost, tohost, userName, passWord, database, collection, startts, stopts, startcount, stopcount, fromport, toport, all)
 		mongoinfo.Conn()
 		mongoinfo.Getsrctype()
 		logger.Println("the max process num is set to :", cpu)
@@ -371,10 +390,10 @@ func main() {
 				go mongoinfo.StartRestore(fhost, chs[i])
 				logger.Println(fhost)
 				i++
-				for _, cha := range chs {
-					<-cha
+			}
+			for _, cha := range chs {
+				<-cha
 
-				}
 			}
 
 		} else {

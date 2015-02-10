@@ -5,9 +5,9 @@
 ## 功能
  MongoDB point-in-time 恢复工具
 
-##2015.01.13更新：
-		来源为mongos时：
-		如果指定的来源为mongos,将在各个shard分片（复制集）上进行并发读（若有多个shar分片，可通过使用--cpu参数来调节性能）。
+##2015.02.10更新：
+		新增参数all，默认为no,当设置为yes的时候，将无视所指定的db和ns，恢复所有的符合时间段的oplog数据。
+		即，如果为yes，则进行所有db数据的恢复。
 
 ## 参数
 		--fromhost   源地址
@@ -25,6 +25,7 @@
 		--logpath    输出日志路径
 		--sliece     是否输出到窗口 
 		--cpu		 来源为mongos的时候，并发使用的cpu核数
+		--all		 是否恢复所有数据库（default no）
 
 
 ## startcount&stopcount详解
@@ -46,6 +47,9 @@
 		主机B（零时用于数据恢复的机器）先使用快照X恢复到10点的状态
 
 		./mopre --fromhost A --tohost B --fromport 27017 --toport 27017  --startts a --startcount 0 --stopts b --stopcount n  --database DB  --logpath /tmp/test.log --slience yes
+
+		如果恢复所有数据库，而非指定DB，则（此时指定的database DB 不生效）：
+		./mopre --fromhost A --tohost B --fromport 27017 --toport 27017  --startts a --startcount 0 --stopts b --stopcount n  --database DB  --logpath /tmp/test.log --slience yes --all yes
 
 
 
