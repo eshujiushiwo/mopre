@@ -1,5 +1,7 @@
 # mongo-mopre 工具使用介绍
 ===
+## 支持范围
+ 仅支持复制集架构以及分片架构
 
 
 ## 功能
@@ -22,7 +24,7 @@
 		--stopts     结束时间戳（unixtimestamp 详细解释见下文） 
 		--startcount 从开始时间戳的第几个操作开始（default 0 详细解释见下文）
 		--stopcount  在结束时间戳的第几个操作结束（default 0 详细解释见下文）
-		--logpath    输出日志路径
+		--logpath    本程序的日志输出位置
 		--sliece     是否输出到窗口 
 		--cpu		 来源为mongos的时候，并发使用的cpu核数
 		--all		 是否恢复所有数据库（default no）
